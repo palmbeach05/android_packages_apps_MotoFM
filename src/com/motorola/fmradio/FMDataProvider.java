@@ -101,6 +101,9 @@ public class FMDataProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case CHANNELS:
                 qb.setTables(CHANNEL_TABLE);
+                if (sortOrder == null || sortOrder.length() == 0) {
+                    sortOrder = Channels.ID + " ASC";
+                }
                 break;
             case CHANNELS_ID: {
                 long id = ContentUris.parseId(uri);
@@ -113,7 +116,7 @@ public class FMDataProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
-        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, null);
+        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
         if (c != null) {
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
