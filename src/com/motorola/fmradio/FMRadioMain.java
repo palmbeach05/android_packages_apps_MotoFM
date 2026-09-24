@@ -966,7 +966,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                     StringBuilder sb = new StringBuilder();
                     sb.append(getString(R.string.preset));
                     sb.append(" ");
-                    sb.append(pos);
+                    sb.append(pos + 1);
                     menu.setHeaderTitle(sb.toString());
                 }
             }
@@ -974,7 +974,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mChannelList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                playClickPreset(position);
+                playClickPreset((int) id);
             }
         });
     }
@@ -1104,8 +1104,8 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mRdsMarqueeText.setText(null);
     }
 
-    private void playClickPreset(int position) {
-        Uri uri = Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(position));
+    private void playClickPreset(int presetId) {
+        Uri uri = Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(presetId));
         Cursor cursor = getContentResolver().query(uri, FMUtil.PROJECTION, null, null, null);
 
         if (cursor == null) {
@@ -1116,7 +1116,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             int frequency = cursor.getInt(FMUtil.CHANNEL_COLUMN_FREQ);
             if (frequency == 0) {
                 Log.d(TAG, "Selected an empty channel, saving...");
-                saveChannel(position);
+                saveChannel(presetId);
             } else {
                 mCurFreq = frequency;
                 updatePresetSwitcher();
@@ -1280,11 +1280,22 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     }
 
     private void setSelectedPreset(int preset) {
-        mChannelList.setSelection(preset);
         if (preset < 0) {
             mChannelList.clearChoices();
         } else {
-            mChannelList.setItemChecked(preset, true);
+            int position = ListView.INVALID_POSITION;
+            for (int index = 0; index < mAdapter.getCount(); index++) {
+                if (mAdapter.getItemId(index) == preset) {
+                    position = index;
+                    break;
+                }
+            }
+            if (position == ListView.INVALID_POSITION) {
+                mChannelList.clearChoices();
+            } else {
+                mChannelList.setSelection(position);
+                mChannelList.setItemChecked(position, true);
+            }
         }
         mChannelList.invalidateViews();
         invalidateOptionsMenu();
@@ -1300,24 +1311,21 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
 
     private int getIndexOfEmptyItem() {
         Cursor cursor = getContentResolver().query(Channels.CONTENT_URI, FMUtil.PROJECTION, null, null, null);
-        int count = 0;
+        int id = -1;
 
         if (cursor != null) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 if (cursor.getInt(FMUtil.CHANNEL_COLUMN_FREQ) == 0) {
+                    id = cursor.getInt(FMUtil.CHANNEL_COLUMN_ID);
                     break;
                 }
-                count++;
                 cursor.moveToNext();
-            }
-            if (cursor.isAfterLast()) {
-                count = -1;
             }
             cursor.close();
         }
 
-        return count;
+        return id;
     }
 
     public void clearDB() {
