@@ -687,6 +687,7 @@ public class FMRadioPlayerService extends Service {
         }
         if (mObserver != null) {
             getContentResolver().unregisterContentObserver(mObserver);
+            mObserver = null;
         }
         setMediaButtonReceiverEnabled(false);
         mAM.abandonAudioFocus(mAudioFocusListener);
