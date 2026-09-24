@@ -108,16 +108,25 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         } else if (preference == mRestorePresetsPref) {
             final String fileName = (String) newValue;
             final File restore = buildBackupFileFromName(this, fileName);
-            if (restore != null && restore.exists()) {
-                int presets = PresetBackupHelper.restorePresets(this, restore);
-                String message;
-
-                if (presets >= 0) {
-                    message = getString(R.string.restore_presets_success_toast, presets);
-                } else {
-                    message = getString(R.string.restore_presets_failure_toast);
-                }
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            if (restore != null && restore.isFile()) {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.restore_presets_title)
+                        .setMessage(R.string.restore_presets_confirm_message)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                int presets = PresetBackupHelper.restorePresets(
+                                        SettingsActivity.this, restore);
+                                String message = presets >= 0
+                                        ? getString(R.string.restore_presets_success_toast, presets)
+                                        : getString(R.string.restore_presets_failure_toast);
+                                Toast.makeText(SettingsActivity.this, message, Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+            } else {
+                Toast.makeText(this, R.string.restore_presets_failure_toast, Toast.LENGTH_SHORT).show();
             }
             return false;
         }

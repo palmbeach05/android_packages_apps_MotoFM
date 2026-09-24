@@ -1,9 +1,12 @@
 package com.motorola.fmradio;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -13,6 +16,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 public class FMDataProvider extends ContentProvider {
     private static final String TAG = "FMDataProvider";
 
@@ -21,7 +26,7 @@ public class FMDataProvider extends ContentProvider {
     private static final int DATABASE_VERSION = 1;
 
     private static final String CHANNEL_TABLE = "channels";
-    private static final int CHANNEL_COUNT = 20;
+    static final int CHANNEL_COUNT = 20;
 
     public static class Channels {
         public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/channels");
@@ -41,6 +46,7 @@ public class FMDataProvider extends ContentProvider {
     }
 
     private DatabaseHelper mOpenHelper;
+    private boolean mApplyingBatch;
 
     private class DatabaseHelper extends SQLiteOpenHelper {
         DatabaseHelper(Context context) {
@@ -113,7 +119,7 @@ public class FMDataProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
+    public synchronized int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int count = 0;
 
@@ -131,10 +137,28 @@ public class FMDataProvider extends ContentProvider {
         }
 
 
-        if (count > 0) {
+        if (count > 0 && !mApplyingBatch) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
         return count;
+    }
+
+    @Override
+    public synchronized ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations)
+            throws OperationApplicationException {
+        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        ContentProviderResult[] results;
+        db.beginTransaction();
+        mApplyingBatch = true;
+        try {
+            results = super.applyBatch(operations);
+            db.setTransactionSuccessful();
+        } finally {
+            mApplyingBatch = false;
+            db.endTransaction();
+        }
+        getContext().getContentResolver().notifyChange(Channels.CONTENT_URI, null);
+        return results;
     }
 
     @Override
