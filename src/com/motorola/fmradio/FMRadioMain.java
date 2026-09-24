@@ -62,7 +62,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     private static final String TAG = "FMRadioMain";
 
     private static int LIGHT_ON_TIME = 90000;
-    private static int PRESET_NUM = 20;
+    private static final int PRESET_NUM = FMDataProvider.CHANNEL_COUNT;
 
     private static final int DIALOG_POWERON = 0;
     private static final int DIALOG_SCAN_PROGRESS = 1;

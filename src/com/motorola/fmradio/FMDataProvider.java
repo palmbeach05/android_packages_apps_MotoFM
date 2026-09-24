@@ -23,10 +23,10 @@ public class FMDataProvider extends ContentProvider {
 
     private static final String AUTHORITY = "com.motorola.provider.fmradio";
     private static final String DATABASE_NAME = "fmradio.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     private static final String CHANNEL_TABLE = "channels";
-    static final int CHANNEL_COUNT = 20;
+    static final int CHANNEL_COUNT = 30;
 
     public static class Channels {
         public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/channels");
@@ -62,10 +62,7 @@ public class FMDataProvider extends ContentProvider {
                         + "name TEXT,"
                         + "rds_name TEXT"
                         + ");");
-                for (int i = 0; i < CHANNEL_COUNT; i++) {
-                    db.execSQL("insert into channels (_id, frequency, name, rds_name) " +
-                            "values(\'" + i + "\', \'0\', \'\', \'\');");
-                }
+                insertChannels(db, 0);
             } catch (SQLException e) {
                 Log.e(TAG, e.toString());
             }
@@ -73,6 +70,16 @@ public class FMDataProvider extends ContentProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            if (oldVersion == 1 && newVersion >= 2) {
+                insertChannels(db, 20);
+            }
+        }
+
+        private void insertChannels(SQLiteDatabase db, int firstId) {
+            for (int id = firstId; id < CHANNEL_COUNT; id++) {
+                db.execSQL("insert into channels (_id, frequency, name, rds_name) "
+                        + "values('" + id + "', '0', '', '');");
+            }
         }
     }
 
