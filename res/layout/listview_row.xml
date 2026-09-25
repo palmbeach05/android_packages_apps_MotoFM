@@ -10,12 +10,23 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/list_favorite"
         android:ellipsize="end"
         android:paddingLeft="@dimen/listview_items_padding_left_top"
-        android:paddingRight="@dimen/listview_items_padding_right"
+        android:paddingRight="8dp"
         android:paddingTop="@dimen/listview_items_padding_left_top"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/list_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:paddingRight="@dimen/listview_items_padding_right"
+        android:text="@string/favorite_indicator"
+        android:contentDescription="@string/favorite_status" />
 
     <TextView
         android:id="@+id/list_frequency"
