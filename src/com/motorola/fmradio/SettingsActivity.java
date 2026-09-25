@@ -26,12 +26,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     public static final String ACTION_RSSI_UPDATED = "com.motorola.fmradio.action.RSSI_SETTING_UPDATED";
     public static final String EXTRA_RSSI = "rssi";
 
-    private static final int DIALOG_WARN_AIRPLANE = 0;
     private static final int DIALOG_INFO_HEADSET = 1;
 
     private static final String BACKUP_PREFIX = "presets-";
 
-    private CheckBoxPreference mIgnoreAirplanePref;
     private CheckBoxPreference mIgnoreNoHeadsetPref;
     private ListPreference mSeekSensitivityPref;
     private EditTextPreference mBackupPresetsPref;
@@ -44,8 +42,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
         PreferenceScreen prefs = getPreferenceScreen();
 
-        mIgnoreAirplanePref = (CheckBoxPreference) prefs.findPreference("ignore_airplane_mode");
-        mIgnoreAirplanePref.setOnPreferenceChangeListener(this);
         mIgnoreNoHeadsetPref = (CheckBoxPreference) prefs.findPreference("ignore_no_headset");
         mIgnoreNoHeadsetPref.setOnPreferenceChangeListener(this);
         mSeekSensitivityPref = (ListPreference) prefs.findPreference("seek_sensitivity");
@@ -74,13 +70,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference == mIgnoreAirplanePref) {
-            final Boolean value = (Boolean) newValue;
-            if (value) {
-                showDialog(DIALOG_WARN_AIRPLANE);
-                return false;
-            }
-        } else if (preference == mIgnoreNoHeadsetPref) {
+        if (preference == mIgnoreNoHeadsetPref) {
             final Boolean value = (Boolean) newValue;
             if (value) {
                 showDialog(DIALOG_INFO_HEADSET);
@@ -137,18 +127,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
-            case DIALOG_WARN_AIRPLANE:
-                return new AlertDialog.Builder(this)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.airplane_ignore_warning_message)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mIgnoreAirplanePref.setChecked(true);
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .create();
             case DIALOG_INFO_HEADSET:
                 return new AlertDialog.Builder(this)
                         .setTitle(R.string.notice)

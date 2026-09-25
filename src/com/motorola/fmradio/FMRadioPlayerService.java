@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -305,17 +304,6 @@ public class FMRadioPlayerService extends Service {
                     }
                 });
                 return true;
-            }
-
-            boolean inAirplaneMode = Settings.System.getInt(
-                    getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1;
-
-            if (inAirplaneMode && !Preferences.isAirplaneModeIgnored(FMRadioPlayerService.this)) {
-                Message msg = Message.obtain(mHandler, MSG_SHOW_NOTICE,
-                        R.string.fmradio_airplane_mode_enabled, 0, null);
-                mHandler.sendMessage(msg);
-                scheduleShutdown();
-                return false;
             }
 
             Intent headsetIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
@@ -770,13 +758,6 @@ public class FMRadioPlayerService extends Service {
                 if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
                     int state = intent.getIntExtra("state", 0);
                     handleHeadsetChange(state);
-                } else if (action.equals(Intent.ACTION_AIRPLANE_MODE_CHANGED)) {
-                    int state = intent.getIntExtra("state", 0);
-                    Log.v(TAG, "Got airplane mode change message, new state " + state);
-                    if (state != 0 && !Preferences.isAirplaneModeIgnored(context)) {
-                        FMUtil.showNoticeDialog(context, R.string.fmradio_airplane_mode_enabled);
-                        mHandler.sendEmptyMessage(MSG_SHUTDOWN);
-                    }
                 } else if (action.equals(ACTION_AUDIOPATH_FREE)) {
                     Log.v(TAG, "Audio path is available again");
                     setFMMuteState(false);
@@ -798,7 +779,6 @@ public class FMRadioPlayerService extends Service {
 
         Log.v(TAG, "Registering broadcast receiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         filter.addAction(AudioManager.VOLUME_CHANGED_ACTION);
         filter.addAction(ACTION_AUDIOPATH_FREE);
         filter.addAction(ACTION_AUDIOPATH_BUSY);
