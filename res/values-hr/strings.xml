@@ -29,7 +29,6 @@
     <string name="fmradio_scan_confirm_msg">Da li želite automatski pretražiti i spremiti sve dostupne stanice?</string>
     <string name="fmradio_clear_confirm_msg">Pretraživanje stanica će ibrisati sve vaše trenutno spremljene stanice. Da li želite nastaviti s pretraživanjem?</string>
     <string name="fmradio_no_headset">Da bi ste koristili FM Radio, uključite slušalice u utor.</string>
-    <string name="fmradio_airplane_mode_enabled">Da bi ste koristili FM Radio, molimo isključite mod za rad u avionu.</string>
     <string name="fmradio_waiting_for_power_on">FM Radio se pokreće, molimo pričekajte\u2026</string>
     <string name="error_start_scan">Pretraživanje nije moguće pokrenuti. Molimo pokušajte ponovo.</string>
     <string name="service_start_error_title">Pokretanje FM Radio servisa neuspješno</string>
@@ -100,8 +99,6 @@
 
     <string name="settings_title">Postavke</string>
     <string name="general_settings_title">Općenito</string>
-    <string name="ignore_airplane_title">Ignoriraj mod za rad u avionu</string>
-    <string name="ignore_airplane_summary">Dopusti rad FM radia čak i kada je mod za rad u avionu uključen</string>
     <string name="ignore_no_headset_title">Ignoriraj iskopčane slušalice</string>
     <string name="ignore_no_headset_summary">Dopusti korištenje FM radia kada su slušalice iskopčane. Kvaliteta signala bit će snižena</string>
     <string name="tuning_settings_title">Podešavanje</string>
@@ -120,7 +117,6 @@
     <string name="notice">Obavijest</string>
     <string name="warning">Upozorenje</string>
     <string name="no_headset_ignore_message">Pošto slušalica služi kao antena FM, kvaliteta prijema će biti značajno snižena ako je slušalica je isključena.</string>
-    <string name="airplane_ignore_warning_message">FM radio koristi ugrađeni Bluetooth hardver, koji može biti protuzakonito koristiti pod određenim uvjetima, npr. u avionu.\nJeste li sigurni da želite uključiti FM Radio u modu za rad u avionu?</string>
     <string name="yes">Da</string>
     <string name="no">Ne</string>
 </resources>

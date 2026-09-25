@@ -26,7 +26,6 @@
     <string name="fmradio_scan_confirm_msg">Deseja procurar todas as estações disponíveis?</string>
     <string name="fmradio_clear_confirm_msg">Deseja apagar todas as estações salvas antes de procurar?</string>
     <string name="fmradio_no_headset">Rádio FM requer um fone de ouvido para funcionar. Por favor, conecte um fone de ouvido.</string>
-    <string name="fmradio_airplane_mode_enabled">Para usar o rádio FM, por favor, desligue o modo avião.</string>
     <string name="fmradio_waiting_for_power_on">Carregando o rádio FM. Por favor, aguarde.</string>
     <string name="service_start_error_title">Falha no serviço de rádio FM</string>
     <string name="service_start_error_msg">Ocorreu um erro no rádio FM e ele será fechado. Tente executá-lo novamente.</string>
@@ -96,8 +95,6 @@
         
     <string name="settings_title">Configurações</string>
     <string name="general_settings_title">General</string>
-    <string name="ignore_airplane_title">Ignorar modo avião</string>
-    <string name="ignore_airplane_summary">Permite operação do rádio FM mesmo com modo avião ativado</string>
     <string name="ignore_no_headset_title">Ignorar fone de ouvido</string>
     <string name="ignore_no_headset_summary">Permite usar o rádio FM sem fone de ouvido conectado. A qualidade da recepção será pejudicada</string>
     <string name="tuning_settings_title">Sintonização</string>
@@ -116,7 +113,6 @@
     <string name="notice">Nota</string>
     <string name="warning">Aviso</string>
     <string name="no_headset_ignore_message">O fone de ouvido funciona como antena FM, a qualidade da recepção será prejudicada bastante com a retirada do fone.</string>
-    <string name="airplane_ignore_warning_message">O rádio FM usará o Bluetooth interno, tal utilização pode ser ilegal, por exemplo no avião.\nVocê deseja mesmo usar o rádio FM em modo avião?</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="untitled">Não definido</string>
