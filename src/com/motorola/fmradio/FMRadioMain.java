@@ -838,6 +838,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                 break;
         }
 
+        v.setPressed(false);
         return true;
     }
 
@@ -1067,12 +1068,22 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
      * @param upward weather animation should move up or down
      */
     private void showSeekAnimation(boolean show, boolean upward) {
-        if (show && mScanBar.getVisibility() == View.INVISIBLE) {
-            mScanBar.setBackgroundDrawable(upward ? mScanAnimationUp : mScanAnimationDown);
-            mScanBar.setVisibility(View.VISIBLE);
-            mScanAnimationUp.start();
-        } else if (!show && mScanBar.getVisibility() == View.VISIBLE) {
-            mScanAnimationUp.stop();
+        AnimationDrawable currentAnimation = mScanBar.getBackground() instanceof AnimationDrawable
+                ? (AnimationDrawable) mScanBar.getBackground() : null;
+        if (show) {
+            AnimationDrawable selectedAnimation = upward ? mScanAnimationUp : mScanAnimationDown;
+            if (mScanBar.getVisibility() != View.VISIBLE || currentAnimation != selectedAnimation) {
+                if (currentAnimation != null) {
+                    currentAnimation.stop();
+                }
+                mScanBar.setBackgroundDrawable(selectedAnimation);
+                mScanBar.setVisibility(View.VISIBLE);
+                selectedAnimation.start();
+            }
+        } else if (mScanBar.getVisibility() == View.VISIBLE) {
+            if (currentAnimation != null) {
+                currentAnimation.stop();
+            }
             mScanBar.setVisibility(View.INVISIBLE);
             mScanBar.setBackgroundDrawable(null);
         }
