@@ -144,6 +144,10 @@
     <string name="no_favorites">No favorites saved yet.</string>
     <string name="not_in_scan">Not in latest scan</string>
     <string name="favorite_indicator">★</string>
+    <string name="not_favorite_indicator">☆</string>
     <string name="favorite_status">Favorite</string>
     <string name="favorite_tune_unavailable">Unable to tune this favorite right now.</string>
+    <string name="notification_previous">Previous station</string>
+    <string name="notification_next">Next station</string>
+    <string name="notification_stop">Turn off FM Radio</string>
 </resources>

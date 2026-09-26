@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -16,17 +17,20 @@ import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.motorola.android.fmradio.IFMRadioService;
 import com.motorola.android.fmradio.IFMRadioServiceCallback;
 import com.motorola.fmradio.FMDataProvider.Channels;
+import com.motorola.fmradio.FMDataProvider.Favorites;
 
 public class FMRadioPlayerService extends Service {
     private static final String TAG = "FMRadioPlayerService";
@@ -40,6 +44,7 @@ public class FMRadioPlayerService extends Service {
     public static final String COMMAND_NEXT = "next";
     public static final String COMMAND_PREV = "prev";
     public static final String COMMAND_STOP = "stop";
+    public static final String COMMAND_FAVORITE = "favorite";
 
     public static int FM_ROUTING_HEADSET = 0;
     public static int FM_ROUTING_SPEAKER = 1;
@@ -459,7 +464,12 @@ public class FMRadioPlayerService extends Service {
                     }
                     break;
                 case MSG_ABORT_COMPLETE:
+                    int frequencyBeforeAbort = mCurFreq;
                     updateCurrentFrequency(msg.arg2);
+                    if (frequencyBeforeAbort != mCurFreq) {
+                        resetRDSData();
+                        updateStateIndicators();
+                    }
                     if (msg.arg1 == 0) {
                         notifyTuneResult(false);
                     } else if (mCallbacks != null) {
@@ -492,6 +502,7 @@ public class FMRadioPlayerService extends Service {
                     String newRt = (String) msg.obj;
                     if (!TextUtils.equals(mRdsRadioText, newRt)) {
                         mRdsRadioText = newRt;
+                        updateStateIndicators();
                         notifyRdsUpdate();
                     }
                     break;
@@ -651,6 +662,8 @@ public class FMRadioPlayerService extends Service {
                 handlePrevNextButton(false);
             } else if (COMMAND_STOP.equals(command)) {
                 shutdownFM();
+            } else if (COMMAND_FAVORITE.equals(command)) {
+                toggleCurrentFavorite();
             }
         }
 
@@ -742,6 +755,7 @@ public class FMRadioPlayerService extends Service {
         };
 
         getContentResolver().registerContentObserver(Channels.CONTENT_URI, true, mObserver);
+        getContentResolver().registerContentObserver(Favorites.CONTENT_URI, true, mObserver);
     }
 
     private void registerBroadcastReceiver() {
@@ -921,12 +935,23 @@ public class FMRadioPlayerService extends Service {
             stationName = mRdsStationName;
         }
 
-        /* TODO: add hint if muted? */
-        RemoteViews views = buildNotificationViews();
-        views.setTextViewText(R.id.status_bar_track_name,
-                stationName != null ? stationName : frequencyString);
-        views.setTextViewText(R.id.status_bar_artist_name,
-                stationName != null ? frequencyString : "");
+        String stationLine = stationName != null
+                ? frequencyString + "  " + stationName : frequencyString;
+        RemoteViews compact = new RemoteViews(getPackageName(), R.layout.status_bar);
+        compact.setTextViewText(R.id.status_bar_summary, stationLine);
+        mNotification.contentView = compact;
+
+        RemoteViews expanded = buildExpandedNotificationViews();
+        expanded.setTextViewText(R.id.status_bar_station, stationLine);
+        expanded.setTextViewText(R.id.status_bar_radio_text, mRdsRadioText);
+        expanded.setViewVisibility(R.id.status_bar_radio_text,
+                TextUtils.isEmpty(mRdsRadioText) ? View.GONE : View.VISIBLE);
+        boolean favorite = isCurrentFavorite();
+        expanded.setTextViewText(R.id.status_bar_favorite,
+                getString(favorite ? R.string.favorite_indicator : R.string.not_favorite_indicator));
+        expanded.setContentDescription(R.id.status_bar_favorite,
+                getString(favorite ? R.string.remove_favorite : R.string.add_favorite));
+        mNotification.bigContentView = expanded;
         startForeground(R.string.app_name, mNotification);
 
         updateFmStateBroadcast(true);
@@ -960,13 +985,56 @@ public class FMRadioPlayerService extends Service {
         editor.apply();
     }
 
-    private RemoteViews buildNotificationViews() {
-        RemoteViews views = new RemoteViews(getPackageName(), R.layout.status_bar);
+    private RemoteViews buildExpandedNotificationViews() {
+        RemoteViews views = new RemoteViews(getPackageName(), R.layout.status_bar_expanded);
         views.setOnClickPendingIntent(R.id.status_bar_previous, buildServiceIntent(COMMAND_PREV));
         views.setOnClickPendingIntent(R.id.status_bar_next, buildServiceIntent(COMMAND_NEXT));
-        views.setOnClickPendingIntent(R.id.status_bar_collapse, buildServiceIntent(COMMAND_STOP));
-        mNotification.contentView = views;
+        views.setOnClickPendingIntent(R.id.status_bar_favorite, buildServiceIntent(COMMAND_FAVORITE));
+        views.setOnClickPendingIntent(R.id.status_bar_power, buildServiceIntent(COMMAND_STOP));
         return views;
+    }
+
+    private boolean isCurrentFavorite() {
+        Cursor cursor = getContentResolver().query(
+                Uri.withAppendedPath(Favorites.CONTENT_URI, String.valueOf(mCurFreq)),
+                new String[] { Favorites.ID }, null, null, null);
+        if (cursor == null) {
+            return false;
+        }
+        try {
+            return cursor.moveToFirst();
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private void toggleCurrentFavorite() {
+        if (mCurFreq < FMUtil.MIN_FREQUENCY || mCurFreq > FMUtil.MAX_FREQUENCY
+                || (mCurFreq - FMUtil.MIN_FREQUENCY) % FMUtil.STEP != 0) {
+            return;
+        }
+        if (isCurrentFavorite()) {
+            getContentResolver().delete(
+                    Uri.withAppendedPath(Favorites.CONTENT_URI, String.valueOf(mCurFreq)), null, null);
+        } else {
+            String name = "";
+            Cursor station = getCurrentPresetCursor();
+            if (station != null) {
+                name = station.getString(FMUtil.CHANNEL_COLUMN_NAME);
+                if (TextUtils.isEmpty(name)) {
+                    name = station.getString(FMUtil.CHANNEL_COLUMN_RDSNAME);
+                }
+                station.close();
+            }
+            if (TextUtils.isEmpty(name)) {
+                name = mRdsStationName;
+            }
+            ContentValues values = new ContentValues();
+            values.put(Favorites.FREQUENCY, mCurFreq);
+            values.put(Favorites.NAME, name == null ? "" : name);
+            getContentResolver().insert(Favorites.CONTENT_URI, values);
+        }
+        updateStateIndicators();
     }
 
     private PendingIntent buildServiceIntent(String command) {
