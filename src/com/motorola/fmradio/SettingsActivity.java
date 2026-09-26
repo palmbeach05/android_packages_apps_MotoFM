@@ -204,8 +204,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         if (!success) {
             try {
                 DocumentsContract.deleteDocument(getContentResolver(), document);
-            } catch (IOException e) {
-                // Cleanup is best effort; keep the original export failure result.
             } catch (RuntimeException e) {
                 // Providers may not support deletion or may deny access.
             }
