@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@id/list_favorite"
+        android:layout_toLeftOf="@+id/list_favorite"
         android:ellipsize="end"
         android:paddingLeft="@dimen/listview_items_padding_left_top"
         android:paddingRight="8dp"
