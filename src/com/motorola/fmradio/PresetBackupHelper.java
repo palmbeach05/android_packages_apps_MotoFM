@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -42,12 +43,6 @@ public class PresetBackupHelper {
     }
 
     public static boolean backupPresets(Context context, File destination) {
-        Cursor cursor = context.getContentResolver().query(Channels.CONTENT_URI,
-                FMUtil.PROJECTION, null, null, null);
-        if (cursor == null) {
-            return false;
-        }
-
         File temporary = null;
         boolean replaced = false;
         try {
@@ -58,18 +53,9 @@ public class PresetBackupHelper {
             temporary = File.createTempFile("." + destination.getName(), ".tmp", dir);
             FileOutputStream os = new FileOutputStream(temporary);
             try {
-                XmlSerializer serializer = Xml.newSerializer();
-                serializer.setOutput(os, "UTF-8");
-                serializer.startDocument(null, Boolean.TRUE);
-
-                serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
-                serializer.startTag(null, ROOT_ELEMENT);
-                serializer.startTag(null, PRESETS_ELEMENT);
-                exportPresets(serializer, cursor);
-                serializer.endTag(null, PRESETS_ELEMENT);
-                serializer.endTag(null, ROOT_ELEMENT);
-                serializer.endDocument();
-                serializer.flush();
+                if (!backupPresets(context, os)) {
+                    return false;
+                }
                 os.getFD().sync();
             } finally {
                 os.close();
@@ -81,10 +67,37 @@ public class PresetBackupHelper {
             Log.w(TAG, "Could not write preset backup", e);
             return false;
         } finally {
-            cursor.close();
             if (!replaced && temporary != null) {
                 temporary.delete();
             }
+        }
+    }
+
+    // The caller owns the stream, including flushing and closing the document provider handle.
+    public static boolean backupPresets(Context context, OutputStream output) {
+        Cursor cursor = context.getContentResolver().query(Channels.CONTENT_URI,
+                FMUtil.PROJECTION, null, null, null);
+        if (cursor == null) {
+            return false;
+        }
+        try {
+            XmlSerializer serializer = Xml.newSerializer();
+            serializer.setOutput(output, "UTF-8");
+            serializer.startDocument(null, Boolean.TRUE);
+            serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
+            serializer.startTag(null, ROOT_ELEMENT);
+            serializer.startTag(null, PRESETS_ELEMENT);
+            exportPresets(serializer, cursor);
+            serializer.endTag(null, PRESETS_ELEMENT);
+            serializer.endTag(null, ROOT_ELEMENT);
+            serializer.endDocument();
+            serializer.flush();
+            return true;
+        } catch (IOException e) {
+            Log.w(TAG, "Could not write preset backup", e);
+            return false;
+        } finally {
+            cursor.close();
         }
     }
 
@@ -138,13 +151,22 @@ public class PresetBackupHelper {
     }
 
     public static int restorePresets(Context context, File source) {
+        try {
+            return restorePresets(context, new FileInputStream(source));
+        } catch (IOException e) {
+            Log.w(TAG, "Could not read from backup file", e);
+            return -1;
+        }
+    }
+
+    // This method closes the stream before changing any presets.
+    public static int restorePresets(Context context, InputStream input) {
         HashMap<Integer, PresetDescription> importResults;
         try {
-            InputStream is = new FileInputStream(source);
             try {
-                importResults = parseBackup(is);
+                importResults = parseBackup(input);
             } finally {
-                is.close();
+                input.close();
             }
         } catch (IOException e) {
             Log.w(TAG, "Could not read from backup file", e);
