@@ -31,8 +31,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="#ffffffff"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title" />
 
             <TextView
                 android:id="@+id/status_bar_radio_text"
@@ -40,8 +39,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="#ffcccccc"
-                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
                 android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
@@ -70,7 +68,7 @@
             android:layout_height="48dp"
             android:background="?android:listChoiceBackgroundIndicator"
             android:gravity="center"
-            android:textColor="#ffffffff"
+            android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
             android:textSize="26sp" />
 
         <ImageButton

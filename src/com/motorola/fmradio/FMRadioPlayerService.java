@@ -18,6 +18,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -941,17 +942,26 @@ public class FMRadioPlayerService extends Service {
         compact.setTextViewText(R.id.status_bar_summary, stationLine);
         mNotification.contentView = compact;
 
-        RemoteViews expanded = buildExpandedNotificationViews();
-        expanded.setTextViewText(R.id.status_bar_station, stationLine);
-        expanded.setTextViewText(R.id.status_bar_radio_text, mRdsRadioText);
-        expanded.setViewVisibility(R.id.status_bar_radio_text,
-                TextUtils.isEmpty(mRdsRadioText) ? View.GONE : View.VISIBLE);
-        boolean favorite = isCurrentFavorite();
-        expanded.setTextViewText(R.id.status_bar_favorite,
-                getString(favorite ? R.string.favorite_indicator : R.string.not_favorite_indicator));
-        expanded.setContentDescription(R.id.status_bar_favorite,
-                getString(favorite ? R.string.remove_favorite : R.string.add_favorite));
-        mNotification.bigContentView = expanded;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            RemoteViews expanded = buildExpandedNotificationViews();
+            expanded.setTextViewText(R.id.status_bar_station, stationLine);
+            expanded.setTextViewText(R.id.status_bar_radio_text, mRdsRadioText);
+            expanded.setViewVisibility(R.id.status_bar_radio_text,
+                    TextUtils.isEmpty(mRdsRadioText) ? View.GONE : View.VISIBLE);
+            boolean favorite = isCurrentFavorite();
+            expanded.setTextViewText(R.id.status_bar_favorite,
+                    getString(favorite ? R.string.favorite_indicator : R.string.not_favorite_indicator));
+            expanded.setContentDescription(R.id.status_bar_favorite,
+                    getString(favorite ? R.string.remove_favorite : R.string.add_favorite));
+            mNotification.bigContentView = expanded;
+        } else {
+            compact.setViewVisibility(R.id.status_bar_previous, View.VISIBLE);
+            compact.setViewVisibility(R.id.status_bar_next, View.VISIBLE);
+            compact.setViewVisibility(R.id.status_bar_power, View.VISIBLE);
+            compact.setOnClickPendingIntent(R.id.status_bar_previous, buildServiceIntent(COMMAND_PREV));
+            compact.setOnClickPendingIntent(R.id.status_bar_next, buildServiceIntent(COMMAND_NEXT));
+            compact.setOnClickPendingIntent(R.id.status_bar_power, buildServiceIntent(COMMAND_STOP));
+        }
         startForeground(R.string.app_name, mNotification);
 
         updateFmStateBroadcast(true);

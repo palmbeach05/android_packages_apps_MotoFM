@@ -21,7 +21,27 @@
         android:paddingLeft="@dimen/status_bar_button_info_container_padding_left"
         android:paddingRight="8dp"
         android:singleLine="true"
-        android:textColor="#ffffffff"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title" />
+
+    <ImageButton
+        android:id="@+id/status_bar_previous"
+        style="@style/StatusBarButton"
+        android:contentDescription="@string/notification_previous"
+        android:src="@drawable/fm_holo_dark_previous"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/status_bar_next"
+        style="@style/StatusBarButton"
+        android:contentDescription="@string/notification_next"
+        android:src="@drawable/fm_holo_dark_next"
+        android:visibility="gone" />
+
+    <ImageButton
+        android:id="@+id/status_bar_power"
+        style="@style/StatusBarButton"
+        android:contentDescription="@string/notification_stop"
+        android:src="@drawable/ic_menu_power"
+        android:visibility="gone" />
 
 </LinearLayout>
