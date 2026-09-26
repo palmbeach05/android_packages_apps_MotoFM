@@ -23,6 +23,15 @@
             android:icon="@drawable/ic_menu_clear_channel"
             android:title="@string/clear_presets" />
     <item
+            android:id="@+id/menu_favorite"
+            android:title="@string/add_favorite" />
+    <item
+            android:id="@+id/menu_favorites"
+            android:title="@string/favorites" />
+    <item
+            android:id="@+id/menu_clear_favorites"
+            android:title="@string/clear_favorites" />
+    <item
             android:id="@+id/menu_scan"
             android:icon="@drawable/ic_menu_save_channel"
             android:title="@string/scan" />

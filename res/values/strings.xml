@@ -136,4 +136,14 @@
     <string name="restore_presets_success_toast">The preset backup with %1$d presets was restored successfully.</string>
     <string name="restore_presets_failure_toast">Restoring the preset list from the backup failed.</string>
     <string name="select_backup">Select backup</string>
+    <string name="favorites">Favorites</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+    <string name="clear_favorites">Clear favorites</string>
+    <string name="clear_favorites_confirm">Remove all saved favorites?</string>
+    <string name="no_favorites">No favorites saved yet.</string>
+    <string name="not_in_scan">Not in latest scan</string>
+    <string name="favorite_indicator">★</string>
+    <string name="favorite_status">Favorite</string>
+    <string name="favorite_tune_unavailable">Unable to tune this favorite right now.</string>
 </resources>
