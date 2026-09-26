@@ -16,6 +16,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+import android.provider.DocumentsContract;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.widget.Toast;
@@ -164,7 +165,25 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         }
     }
 
-    private void exportPresets(Uri document) {
+    private void exportPresets(final Uri document) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final boolean success = writePresets(document);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(SettingsActivity.this,
+                                success ? R.string.backup_presets_success_toast
+                                        : R.string.backup_presets_failure_toast,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private boolean writePresets(Uri document) {
         boolean success = false;
         try {
             OutputStream output = getContentResolver().openOutputStream(document, "wt");
@@ -182,8 +201,16 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         } catch (IllegalArgumentException e) {
             success = false;
         }
-        Toast.makeText(this, success ? R.string.backup_presets_success_toast
-                : R.string.backup_presets_failure_toast, Toast.LENGTH_SHORT).show();
+        if (!success) {
+            try {
+                DocumentsContract.deleteDocument(getContentResolver(), document);
+            } catch (IOException e) {
+                // Cleanup is best effort; keep the original export failure result.
+            } catch (RuntimeException e) {
+                // Providers may not support deletion or may deny access.
+            }
+        }
+        return success;
     }
 
     private int importPresets(Uri document) {
@@ -210,12 +237,23 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        int presets = document != null ? importPresets(document)
-                                : PresetBackupHelper.restorePresets(SettingsActivity.this, file);
-                        String message = presets >= 0
-                                ? getString(R.string.restore_presets_success_toast, presets)
-                                : getString(R.string.restore_presets_failure_toast);
-                        Toast.makeText(SettingsActivity.this, message, Toast.LENGTH_SHORT).show();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                final int presets = document != null ? importPresets(document)
+                                        : PresetBackupHelper.restorePresets(SettingsActivity.this, file);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        String message = presets >= 0
+                                                ? getString(R.string.restore_presets_success_toast, presets)
+                                                : getString(R.string.restore_presets_failure_toast);
+                                        Toast.makeText(SettingsActivity.this, message,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }).start();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
