@@ -4,11 +4,6 @@
     <PreferenceCategory android:key="general"
                         android:title="@string/general_settings_title">
 
-        <CheckBoxPreference android:key="ignore_airplane_mode"
-                            android:defaultValue="false"
-                            android:title="@string/ignore_airplane_title"
-                            android:summary="@string/ignore_airplane_summary" />
-
         <CheckBoxPreference android:key="ignore_no_headset"
                             android:defaultValue="false"
                             android:title="@string/ignore_no_headset_title"
