@@ -141,6 +141,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private void showPresetBackupList() {
         updatePresetBackupList();
         final String[] backupNames = mPresetBackupNames;
+        if (backupNames.length == 0) {
+            Toast.makeText(this, R.string.restore_presets_failure_toast, Toast.LENGTH_SHORT).show();
+            return;
+        }
         new AlertDialog.Builder(this)
                 .setTitle(R.string.select_backup)
                 .setItems(backupNames, new DialogInterface.OnClickListener() {
