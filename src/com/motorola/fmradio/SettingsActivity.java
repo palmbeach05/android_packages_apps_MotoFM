@@ -41,8 +41,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private CheckBoxPreference mIgnoreNoHeadsetPref;
     private ListPreference mSeekSensitivityPref;
     private Preference mBackupPresetsPref;
-    private ListPreference mRestorePresetsPref;
-    private Preference mImportPresetsPref;
+    private Preference mRestorePresetsPref;
+    private String[] mPresetBackupNames = new String[0];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,9 +56,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         mSeekSensitivityPref = (ListPreference) prefs.findPreference("seek_sensitivity");
         mSeekSensitivityPref.setOnPreferenceChangeListener(this);
         mBackupPresetsPref = prefs.findPreference("backup_presets");
-        mRestorePresetsPref = (ListPreference) prefs.findPreference("restore_presets");
-        mRestorePresetsPref.setOnPreferenceChangeListener(this);
-        mImportPresetsPref = prefs.findPreference("import_presets");
+        mRestorePresetsPref = prefs.findPreference("restore_presets");
     }
 
     @Override
@@ -72,17 +70,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         if (preference == mBackupPresetsPref) {
             showBackupStorageChoice();
             return true;
-        } else if (preference == mImportPresetsPref) {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("*/*");
-            launchDocumentPicker(intent, REQUEST_IMPORT_PRESETS, R.string.restore_presets_failure_toast);
+        } else if (preference == mRestorePresetsPref) {
+            showRestoreStorageChoice();
             return true;
         }
-        if (preference == mRestorePresetsPref) {
-            updatePresetBackupList();
-        }
-
         return false;
     }
 
@@ -98,15 +89,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             Intent i = new Intent(ACTION_RSSI_UPDATED);
             i.putExtra(EXTRA_RSSI, value);
             sendBroadcast(i);
-        } else if (preference == mRestorePresetsPref) {
-            final String fileName = (String) newValue;
-            final File restore = buildBackupFileFromName(this, fileName);
-            if (restore != null && restore.isFile()) {
-                showRestoreConfirmation(restore, null);
-            } else {
-                Toast.makeText(this, R.string.restore_presets_failure_toast, Toast.LENGTH_SHORT).show();
-            }
-            return false;
         }
 
         return true;
@@ -132,6 +114,57 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void showRestoreStorageChoice() {
+        CharSequence[] choices = {
+                getString(R.string.restore_presets_app_storage_choice),
+                getString(R.string.restore_presets_choose_location_choice)
+        };
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.restore_presets_title)
+                .setSingleChoiceItems(choices, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        if (which == 0) {
+                            showPresetBackupList();
+                        } else {
+                            launchImportPicker();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showPresetBackupList() {
+        updatePresetBackupList();
+        final String[] backupNames = mPresetBackupNames;
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.select_backup)
+                .setItems(backupNames, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        File restore = buildBackupFileFromName(SettingsActivity.this,
+                                backupNames[which]);
+                        if (restore != null && restore.isFile()) {
+                            showRestoreConfirmation(restore, null);
+                        } else {
+                            Toast.makeText(SettingsActivity.this,
+                                    R.string.restore_presets_failure_toast, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void launchImportPicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        launchDocumentPicker(intent, REQUEST_IMPORT_PRESETS, R.string.restore_presets_failure_toast);
     }
 
     private void showBackupNameDialog() {
@@ -284,7 +317,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private void showRestoreConfirmation(final File file, final Uri document) {
         new AlertDialog.Builder(this)
                 .setTitle(document != null ? R.string.import_presets_title
-                        : R.string.restore_presets_title)
+                        : R.string.restore_presets_app_storage_title)
                 .setMessage(R.string.restore_presets_confirm_message)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
@@ -344,10 +377,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             }
         }
 
-        final String[] itemArray = items.toArray(new String[items.size()]);
-        mRestorePresetsPref.setEntries(itemArray);
-        mRestorePresetsPref.setEntryValues(itemArray);
-        mRestorePresetsPref.setValue(null);
+        mPresetBackupNames = items.toArray(new String[items.size()]);
     }
 
     private static File getPresetBackupDirectory(Context context) {

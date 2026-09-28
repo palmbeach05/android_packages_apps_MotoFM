@@ -42,15 +42,9 @@
                     android:title="@string/backup_presets_title"
                     android:summary="@string/backup_presets_summary" />
 
-        <Preference android:key="import_presets"
-                    android:title="@string/import_presets_title"
-                    android:summary="@string/import_presets_summary" />
-
-        <ListPreference android:key="restore_presets"
-                        android:persistent="false"
-                        android:dialogTitle="@string/select_backup"
-                        android:title="@string/restore_presets_title"
-                        android:summary="@string/restore_presets_summary" />
+        <Preference android:key="restore_presets"
+                    android:title="@string/restore_presets_title"
+                    android:summary="@string/restore_presets_summary" />
 
     </PreferenceCategory>
 
