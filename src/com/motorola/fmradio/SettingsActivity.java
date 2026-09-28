@@ -147,14 +147,33 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
                     public void onClick(DialogInterface dialog, int which) {
                         String value = name.getText().toString();
                         if (!TextUtils.isEmpty(value)) {
-                            File backup = buildBackupFileFromName(SettingsActivity.this, value);
-                            int resId = R.string.backup_presets_failure_toast;
-                            if (backup != null && PresetBackupHelper.backupPresets(
-                                    SettingsActivity.this, backup)) {
-                                resId = R.string.backup_presets_success_toast;
-                                updatePresetBackupList();
+                            if (value.indexOf('/') >= 0 || value.indexOf('\\') >= 0
+                                    || value.equals(".") || value.equals("..")) {
+                                Toast.makeText(SettingsActivity.this,
+                                        R.string.backup_presets_failure_toast, Toast.LENGTH_SHORT).show();
+                                return;
                             }
-                            Toast.makeText(SettingsActivity.this, resId, Toast.LENGTH_SHORT).show();
+                            final File backup = buildBackupFileFromName(SettingsActivity.this, value);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    final boolean success = backup != null
+                                            && PresetBackupHelper.backupPresets(SettingsActivity.this,
+                                                    backup);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (success) {
+                                                updatePresetBackupList();
+                                            }
+                                            Toast.makeText(SettingsActivity.this,
+                                                    success ? R.string.backup_presets_success_toast
+                                                            : R.string.backup_presets_failure_toast,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            }).start();
                         }
                     }
                 })
