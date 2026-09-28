@@ -125,12 +125,12 @@
     <string name="no">No</string>
     <string name="untitled">Untitled</string>
     <string name="backup_restore_title">Backup &amp; Restore</string>
-    <string name="export_presets_title">Export preset backup</string>
-    <string name="export_presets_summary">Choose where to save a portable preset backup. Favorites are not included.</string>
     <string name="import_presets_title">Import preset backup</string>
     <string name="import_presets_summary">Choose a backup to replace your presets. Favorites are unchanged.</string>
-    <string name="backup_presets_title">Back up presets in app storage</string>
-    <string name="backup_presets_summary">Save presets in app-specific storage, which is removed on uninstall. Favorites are not included.</string>
+    <string name="backup_presets_title">Back up presets</string>
+    <string name="backup_presets_summary">Choose where to save a preset backup. Favorites are not included.</string>
+    <string name="backup_presets_app_storage_choice">App-specific storage\nBackups here are removed when the app is uninstalled.</string>
+    <string name="backup_presets_choose_location_choice">Choose a location\nSave a portable backup to a location you choose.</string>
     <string name="backup_presets_dialog_message">Please enter a name for the preset backup.</string>
     <string name="backup_presets_success_toast">Preset list backed up successfully.</string>
     <string name="backup_presets_failure_toast">Backing up the preset list failed.</string>

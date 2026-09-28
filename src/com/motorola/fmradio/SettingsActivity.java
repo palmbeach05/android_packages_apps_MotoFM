@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -19,6 +18,7 @@ import android.preference.PreferenceScreen;
 import android.provider.DocumentsContract;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -40,9 +40,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     private CheckBoxPreference mIgnoreNoHeadsetPref;
     private ListPreference mSeekSensitivityPref;
-    private EditTextPreference mBackupPresetsPref;
+    private Preference mBackupPresetsPref;
     private ListPreference mRestorePresetsPref;
-    private Preference mExportPresetsPref;
     private Preference mImportPresetsPref;
 
     @Override
@@ -56,12 +55,9 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         mIgnoreNoHeadsetPref.setOnPreferenceChangeListener(this);
         mSeekSensitivityPref = (ListPreference) prefs.findPreference("seek_sensitivity");
         mSeekSensitivityPref.setOnPreferenceChangeListener(this);
-        mBackupPresetsPref = (EditTextPreference) prefs.findPreference("backup_presets");
-        mBackupPresetsPref.setOnPreferenceChangeListener(this);
-        mBackupPresetsPref.setText(DateFormat.format("yyyy-MM-dd", new Date()).toString());
+        mBackupPresetsPref = prefs.findPreference("backup_presets");
         mRestorePresetsPref = (ListPreference) prefs.findPreference("restore_presets");
         mRestorePresetsPref.setOnPreferenceChangeListener(this);
-        mExportPresetsPref = prefs.findPreference("export_presets");
         mImportPresetsPref = prefs.findPreference("import_presets");
     }
 
@@ -73,13 +69,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
-        if (preference == mExportPresetsPref) {
-            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("application/xml");
-            intent.putExtra(Intent.EXTRA_TITLE, BACKUP_PREFIX
-                    + DateFormat.format("yyyy-MM-dd", new Date()) + ".xml");
-            launchDocumentPicker(intent, REQUEST_EXPORT_PRESETS, R.string.backup_presets_failure_toast);
+        if (preference == mBackupPresetsPref) {
+            showBackupStorageChoice();
             return true;
         } else if (preference == mImportPresetsPref) {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -107,21 +98,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             Intent i = new Intent(ACTION_RSSI_UPDATED);
             i.putExtra(EXTRA_RSSI, value);
             sendBroadcast(i);
-        } else if (preference == mBackupPresetsPref) {
-            final String value = (String) newValue;
-            if (!TextUtils.isEmpty(value)) {
-                File backup = buildBackupFileFromName(this, value);
-                if (backup != null) {
-                    int resId;
-                    if (PresetBackupHelper.backupPresets(this, backup)) {
-                        resId = R.string.backup_presets_success_toast;
-                        updatePresetBackupList();
-                    } else {
-                        resId = R.string.backup_presets_failure_toast;
-                    }
-                    Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
-                }
-            }
         } else if (preference == mRestorePresetsPref) {
             final String fileName = (String) newValue;
             final File restore = buildBackupFileFromName(this, fileName);
@@ -134,6 +110,65 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         }
 
         return true;
+    }
+
+    private void showBackupStorageChoice() {
+        CharSequence[] choices = {
+                getString(R.string.backup_presets_app_storage_choice),
+                getString(R.string.backup_presets_choose_location_choice)
+        };
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.backup_presets_title)
+                .setSingleChoiceItems(choices, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        if (which == 0) {
+                            showBackupNameDialog();
+                        } else {
+                            launchExportPicker();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showBackupNameDialog() {
+        final EditText name = new EditText(this);
+        name.setSingleLine(true);
+        name.setText(DateFormat.format("yyyy-MM-dd", new Date()));
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.backup_presets_title)
+                .setMessage(R.string.backup_presets_dialog_message)
+                .setView(name)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String value = name.getText().toString();
+                        if (!TextUtils.isEmpty(value)) {
+                            File backup = buildBackupFileFromName(SettingsActivity.this, value);
+                            int resId = R.string.backup_presets_failure_toast;
+                            if (backup != null && PresetBackupHelper.backupPresets(
+                                    SettingsActivity.this, backup)) {
+                                resId = R.string.backup_presets_success_toast;
+                                updatePresetBackupList();
+                            }
+                            Toast.makeText(SettingsActivity.this, resId, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void launchExportPicker() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/xml");
+        intent.putExtra(Intent.EXTRA_TITLE, BACKUP_PREFIX
+                + DateFormat.format("yyyy-MM-dd", new Date()) + ".xml");
+        launchDocumentPicker(intent, REQUEST_EXPORT_PRESETS, R.string.backup_presets_failure_toast);
     }
 
     private void launchDocumentPicker(Intent intent, int requestCode, int failureMessage) {
