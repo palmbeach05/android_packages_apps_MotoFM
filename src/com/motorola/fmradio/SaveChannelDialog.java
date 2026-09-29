@@ -48,7 +48,9 @@ public class SaveChannelDialog extends AlertDialog
 
         setIcon(0);
         setView(view);
-        setInverseBackgroundForced(true);
+        if (!Preferences.isDarkTheme(context)) {
+            setInverseBackgroundForced(true);
+        }
         setTitle(R.string.save_preset);
 
         mFrequencyField = (TextView) view.findViewById(R.id.channel_frequency);

@@ -3,6 +3,12 @@
 
     <style name="Theme" parent="@android:style/Theme.Holo.Light">
         <item name="android:actionButtonStyle">@style/BottomActionBarItem</item>
+        <item name="quickContextDividerColor">@color/transparent_black</item>
+    </style>
+
+    <style name="Theme.Dark" parent="@android:style/Theme.Holo">
+        <item name="android:actionButtonStyle">@style/BottomActionBarItem</item>
+        <item name="quickContextDividerColor">@color/dark_context_divider</item>
     </style>
 
     <!-- Now playing indicator -->

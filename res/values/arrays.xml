@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="theme_entries">
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+    </string-array>
+
+    <string-array name="theme_values" translatable="false">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
     <string-array name="seek_sensitivity_entries" translatable="false">
         <item>@string/seek_sensitivity_entry_verystrong</item>
         <item>@string/seek_sensitivity_entry_strong</item>
@@ -26,4 +35,3 @@
         <item>seek</item>
     </string-array>
 </resources>
-

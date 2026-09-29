@@ -103,6 +103,9 @@
 
     <string name="settings_title">Settings</string>
     <string name="general_settings_title">General</string>
+    <string name="theme_title">Appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="ignore_no_headset_title">Use radio without a headset</string>
     <string name="ignore_no_headset_summary">The headset acts as the FM antenna. Reception may be poor without it.</string>
     <string name="tuning_settings_title">Tuning</string>

@@ -4,6 +4,12 @@
     <PreferenceCategory android:key="general"
                         android:title="@string/general_settings_title">
 
+        <ListPreference android:key="theme"
+                        android:defaultValue="light"
+                        android:title="@string/theme_title"
+                        android:entries="@array/theme_entries"
+                        android:entryValues="@array/theme_values" />
+
         <CheckBoxPreference android:key="ignore_no_headset"
                             android:defaultValue="false"
                             android:title="@string/ignore_no_headset_title"

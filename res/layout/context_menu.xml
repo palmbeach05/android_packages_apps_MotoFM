@@ -13,7 +13,7 @@
         android:layout_width="@dimen/quick_context_line_width"
         android:layout_height="@dimen/quick_context_line_height"
         android:layout_gravity="center|left"
-        android:background="@color/transparent_black" />
+        android:background="?attr/quickContextDividerColor" />
 
     <ImageView
         android:id="@+id/quick_context_tip"
