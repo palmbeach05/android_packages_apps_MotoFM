@@ -4,19 +4,11 @@
     <style name="Theme" parent="@android:style/Theme.Holo.Light">
         <item name="android:actionButtonStyle">@style/BottomActionBarItem</item>
         <item name="quickContextDividerColor">@color/transparent_black</item>
-        <item name="seekBackwardIcon">@drawable/fm_autosearch_reduce</item>
-        <item name="tuneDownIcon">@drawable/fm_manualadjust_reduce</item>
-        <item name="tuneUpIcon">@drawable/fm_manualadjust_plus</item>
-        <item name="seekForwardIcon">@drawable/fm_autosearch_plus</item>
     </style>
 
     <style name="Theme.Dark" parent="@android:style/Theme.Holo">
         <item name="android:actionButtonStyle">@style/BottomActionBarItem</item>
         <item name="quickContextDividerColor">@color/dark_context_divider</item>
-        <item name="seekBackwardIcon">@drawable/fm_autosearch_reduce_dark</item>
-        <item name="tuneDownIcon">@drawable/fm_manualadjust_reduce_dark</item>
-        <item name="tuneUpIcon">@drawable/fm_manualadjust_plus_dark</item>
-        <item name="seekForwardIcon">@drawable/fm_autosearch_plus_dark</item>
     </style>
 
     <!-- Now playing indicator -->
