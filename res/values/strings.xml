@@ -103,19 +103,20 @@
 
     <string name="settings_title">Settings</string>
     <string name="general_settings_title">General</string>
-    <string name="ignore_no_headset_title">Ignore no headset</string>
-    <string name="ignore_no_headset_summary">Allow using the FM Radio if no headset is connected. Reception quality will be degraded</string>
+    <string name="ignore_no_headset_title">Use radio without a headset</string>
+    <string name="ignore_no_headset_summary">The headset acts as the FM antenna. Reception may be poor without it.</string>
     <string name="tuning_settings_title">Tuning</string>
     <string name="seek_sensitivity_title">Seek sensitivity</string>
-    <string name="seek_sensitivity_summary">Fine-tune the required signal level of the stations when seeking</string>
+    <string name="seek_sensitivity_summary">Minimum signal strength for finding a station</string>
     <string name="seek_sensitivity_entry_verystrong">Very strong</string>
     <string name="seek_sensitivity_entry_strong">Strong</string>
     <string name="seek_sensitivity_entry_medium">Medium</string>
     <string name="seek_sensitivity_entry_weak">Weak</string>
     <string name="seek_sensitivity_entry_veryweak">Very weak</string>
-    <string name="button_settings_title">Button behaviour</string>
+    <string name="button_settings_title">Button behavior</string>
     <string name="media_button_title">Media buttons</string>
-    <string name="media_button_summary">Select the behaviour of the previous/next media buttons</string>
+    <string name="media_button_summary">Action for the previous and next media buttons</string>
+    <string name="list_preference_summary">%1$s\n\n%2$s</string>
     <string name="media_button_entry_presets">Switch between presets</string>
     <string name="media_button_entry_seek">Seek stations</string>
     <string name="notice">Notice</string>

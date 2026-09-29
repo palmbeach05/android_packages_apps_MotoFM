@@ -126,7 +126,7 @@
     <string name="untitled">Unbenannt</string>
     <string name="backup_restore_title">Sichern &amp; Wiederherstellen</string>
     <string name="backup_presets_title">Voreinst. sichern</string>
-    <string name="backup_presets_summary">Liste der Voreinstellungen auf die Speicherkarte sichern</string>
+    <string name="backup_presets_summary">Speicherort für die Sicherung der Sender auswählen. Favoriten werden nicht gesichert.</string>
     <string name="backup_presets_dialog_message">Geben Sie bitte einen Namen für die Sicherung ein.</string>
     <string name="backup_presets_success_toast">Die Sicherung der Voreinstellungen war erfolgreich.</string>
     <string name="backup_presets_failure_toast">Während der Sicherung der Voreinstellungen ist ein Fehler aufgetreten.</string>

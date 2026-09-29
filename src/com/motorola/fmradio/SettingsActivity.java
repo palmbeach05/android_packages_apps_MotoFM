@@ -40,6 +40,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     private CheckBoxPreference mIgnoreNoHeadsetPref;
     private ListPreference mSeekSensitivityPref;
+    private ListPreference mMediaButtonPref;
     private Preference mBackupPresetsPref;
     private Preference mRestorePresetsPref;
     private String[] mPresetBackupNames = new String[0];
@@ -55,6 +56,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         mIgnoreNoHeadsetPref.setOnPreferenceChangeListener(this);
         mSeekSensitivityPref = (ListPreference) prefs.findPreference("seek_sensitivity");
         mSeekSensitivityPref.setOnPreferenceChangeListener(this);
+        mMediaButtonPref = (ListPreference) prefs.findPreference("media_button_behaviour");
+        mMediaButtonPref.setOnPreferenceChangeListener(this);
         mBackupPresetsPref = prefs.findPreference("backup_presets");
         mRestorePresetsPref = prefs.findPreference("restore_presets");
     }
@@ -62,6 +65,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     @Override
     protected void onResume() {
         super.onResume();
+        updateListPreferenceSummary(mSeekSensitivityPref, R.string.seek_sensitivity_summary,
+                mSeekSensitivityPref.getValue());
+        updateListPreferenceSummary(mMediaButtonPref, R.string.media_button_summary,
+                mMediaButtonPref.getValue());
         updatePresetBackupList();
     }
 
@@ -89,9 +96,25 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
             Intent i = new Intent(ACTION_RSSI_UPDATED);
             i.putExtra(EXTRA_RSSI, value);
             sendBroadcast(i);
+            updateListPreferenceSummary(mSeekSensitivityPref, R.string.seek_sensitivity_summary,
+                    (String) newValue);
+        } else if (preference == mMediaButtonPref) {
+            updateListPreferenceSummary(mMediaButtonPref, R.string.media_button_summary,
+                    (String) newValue);
         }
 
         return true;
+    }
+
+    private void updateListPreferenceSummary(ListPreference preference, int descriptionId,
+            String value) {
+        int index = preference.findIndexOfValue(value);
+        if (index >= 0) {
+            preference.setSummary(getString(R.string.list_preference_summary,
+                    getString(descriptionId), preference.getEntries()[index]));
+        } else {
+            preference.setSummary(descriptionId);
+        }
     }
 
     private void showBackupStorageChoice() {
