@@ -28,6 +28,7 @@ public class SaveChannelDialog extends AlertDialog
     private CheckBox mUseRdsName;
     private Spinner mPresetSpinner;
     private EditText mNameField;
+    private ArrayList<Integer> mPresetIds = new ArrayList<Integer>();
 
     public interface OnSaveListener {
         void onPresetSaved(int preset);
@@ -72,14 +73,15 @@ public class SaveChannelDialog extends AlertDialog
         mNameField.setText(initialName);
         mUseRdsName.setChecked(TextUtils.isEmpty(initialName));
 
-        mPresetSpinner.setSelection(initialPreset);
+        int position = mPresetIds.indexOf(initialPreset);
+        mPresetSpinner.setSelection(position >= 0 ? position : 0);
     }
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == DialogInterface.BUTTON_POSITIVE) {
             ContentValues cv = new ContentValues();
-            int id = mPresetSpinner.getSelectedItemPosition();
+            int id = mPresetIds.get(mPresetSpinner.getSelectedItemPosition());
             final Uri uri = Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(id));
 
             cv.put(Channels.FREQUENCY, mFrequency);
@@ -108,13 +110,14 @@ public class SaveChannelDialog extends AlertDialog
         Cursor cursor = context.getContentResolver().query(Channels.CONTENT_URI, FMUtil.PROJECTION, null, null, null);
         if (cursor != null) {
             ArrayList<String> results = new ArrayList<String>();
-            int i = 1;
+            mPresetIds.clear();
 
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                results.add(FMUtil.getPresetUiString(context, cursor, i));
+                int id = cursor.getInt(FMUtil.CHANNEL_COLUMN_ID);
+                mPresetIds.add(id);
+                results.add(FMUtil.getPresetUiString(context, cursor, id + 1));
                 cursor.moveToNext();
-                i++;
             }
             cursor.close();
 

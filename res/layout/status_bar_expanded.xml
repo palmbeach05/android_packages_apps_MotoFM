@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/status_bg"
+            android:scaleType="center"
+            android:src="@drawable/fm_statusbar_icon" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/status_bar_button_info_container_padding_left"
+            android:paddingRight="8dp" >
+
+            <TextView
+                android:id="@+id/status_bar_station"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title" />
+
+            <TextView
+                android:id="@+id/status_bar_radio_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/status_bar_previous"
+            style="@style/StatusBarButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/notification_previous"
+            android:minWidth="48dp"
+            android:src="@drawable/fm_holo_dark_previous" />
+
+        <ImageButton
+            android:id="@+id/status_bar_next"
+            style="@style/StatusBarButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/notification_next"
+            android:minWidth="48dp"
+            android:src="@drawable/fm_holo_dark_next" />
+
+        <Button
+            android:id="@+id/status_bar_favorite"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="?android:listChoiceBackgroundIndicator"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
+            android:textSize="26sp" />
+
+        <ImageButton
+            android:id="@+id/status_bar_power"
+            style="@style/StatusBarButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/notification_stop"
+            android:minWidth="48dp"
+            android:src="@drawable/ic_menu_power" />
+    </LinearLayout>
+
+</LinearLayout>

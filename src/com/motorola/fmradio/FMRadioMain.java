@@ -53,8 +53,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.motorola.fmradio.FMDataProvider.Channels;
+import com.motorola.fmradio.FMDataProvider.Favorites;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChangeListener,
         View.OnClickListener, View.OnLongClickListener, View.OnTouchListener,
@@ -62,7 +65,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     private static final String TAG = "FMRadioMain";
 
     private static int LIGHT_ON_TIME = 90000;
-    private static int PRESET_NUM = 20;
+    private static final int PRESET_NUM = FMDataProvider.CHANNEL_COUNT;
 
     private static final int DIALOG_POWERON = 0;
     private static final int DIALOG_SCAN_PROGRESS = 1;
@@ -79,6 +82,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     public static final int EDIT_MENU_ID = 2;
     public static final int REPLACE_MENU_ID = 3;
     public static final int CLEAR_MENU_ID = 4;
+    public static final int FAVORITE_MENU_ID = 5;
 
     private static final int CLEAR_CODE = 0;
 
@@ -151,6 +155,9 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     };
 
     private static final int CHANNEL_LIST_LOADER = 0;
+    private static final int FAVORITES_LOADER = 1;
+
+    private final HashSet<Integer> mFavoriteFrequencies = new HashSet<Integer>();
 
     private ImageButton[] mSeekButtons;
     private ImageSwitcher[] mFreqDigits;
@@ -178,6 +185,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     private int mRdsPTYValue;
 
     private int mCurFreq = 0;
+    private int mPendingFavoriteFrequency = 0;
     private int mPreFreq = FMUtil.MIN_FREQUENCY;
     private boolean mRadioPowered = false;
     private boolean mSpeakerEnabled = false;
@@ -193,6 +201,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             private ImageView mPeakOne;
             private ImageView mPeakTwo;
             private TextView mFrequency;
+            private TextView mFavorite;
             private AnimationDrawable mPeakOneAnimation;
             private AnimationDrawable mPeakTwoAnimation;
             private FrameLayout mQuickContext;
@@ -200,6 +209,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             public ViewHolder(View view) {
                 mName = (TextView) view.findViewById(R.id.list_name);
                 mFrequency = (TextView) view.findViewById(R.id.list_frequency);
+                mFavorite = (TextView) view.findViewById(R.id.list_favorite);
                 mPeakOne = (ImageView) view.findViewById(R.id.peak_one);
                 mPeakTwo = (ImageView) view.findViewById(R.id.peak_two);
                 mQuickContext = (FrameLayout) view.findViewById(R.id.track_list_context_frame);
@@ -215,6 +225,8 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                     mFrequency.setText("");
                 }
                 mName.setText(FMUtil.getPresetListString(context, cursor));
+                mFavorite.setVisibility(frequency > 0 && mFavoriteFrequencies.contains(frequency)
+                        ? View.VISIBLE : View.INVISIBLE);
                 mQuickContext.setOnClickListener(this);
 
                 if (selected) {
@@ -314,6 +326,13 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                     Log.d(TAG, "MSG_POWERON_COMPLETE, powered " + mRadioPowered + ", frequency " + mCurFreq);
                     invalidateOptionsMenu();
                     updateUI();
+                    if (mRadioPowered && mPendingFavoriteFrequency != 0) {
+                        mCurFreq = mPendingFavoriteFrequency;
+                        mPendingFavoriteFrequency = 0;
+                        updateFrequency();
+                    } else {
+                        mPendingFavoriteFrequency = 0;
+                    }
                     break;
                 case MSG_POWEROFF_COMPLETE:
                     mRadioPowered = false;
@@ -649,6 +668,10 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         menu.findItem(R.id.menu_edit).setVisible(canEditPreset && mRadioPowered);
         menu.findItem(R.id.menu_save).setVisible(!canEditPreset && mRadioPowered);
         menu.findItem(R.id.menu_scan).setVisible(mRadioPowered);
+        menu.findItem(R.id.menu_favorite).setVisible(mRadioPowered && !mScanning
+                && mCurFreq >= FMUtil.MIN_FREQUENCY && mCurFreq <= FMUtil.MAX_FREQUENCY);
+        menu.findItem(R.id.menu_favorite).setTitle(mFavoriteFrequencies.contains(mCurFreq)
+                ? R.string.remove_favorite : R.string.add_favorite);
 
         return true;
     }
@@ -659,6 +682,25 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             return false;
         }
         switch (item.getItemId()) {
+            case R.id.menu_favorite:
+                toggleFavorite(mCurFreq);
+                break;
+            case R.id.menu_favorites:
+                showFavorites();
+                break;
+            case R.id.menu_clear_favorites:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.clear_favorites)
+                        .setMessage(R.string.clear_favorites_confirm)
+                        .setPositiveButton(R.string.clear, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                getContentResolver().delete(Favorites.CONTENT_URI, null, null);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+                break;
             case R.id.menu_save:
                 saveChannel(getIndexOfEmptyItem());
                 break;
@@ -725,6 +767,17 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                 saveStationToDB(pos, 0, "", "");
                 updatePresetSwitcher();
                 updateDisplayPanel();
+                break;
+            case FAVORITE_MENU_ID:
+                Cursor favoriteChannel = getContentResolver().query(
+                        Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(pos)),
+                        FMUtil.PROJECTION, null, null, null);
+                if (favoriteChannel != null) {
+                    if (favoriteChannel.moveToFirst()) {
+                        toggleFavorite(favoriteChannel.getInt(FMUtil.CHANNEL_COLUMN_FREQ));
+                    }
+                    favoriteChannel.close();
+                }
                 break;
         }
 
@@ -838,6 +891,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                 break;
         }
 
+        v.setPressed(false);
         return true;
     }
 
@@ -875,18 +929,39 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (id == FAVORITES_LOADER) {
+            return new CursorLoader(this, Favorites.CONTENT_URI,
+                    new String[] { Favorites.ID, Favorites.FREQUENCY }, null, null, null);
+        }
         return new CursorLoader(this, Channels.CONTENT_URI, FMUtil.PROJECTION, null, null, null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (loader.getId() == FAVORITES_LOADER) {
+            mFavoriteFrequencies.clear();
+            if (cursor != null) {
+                cursor.moveToPosition(-1);
+                while (cursor.moveToNext()) {
+                    mFavoriteFrequencies.add(cursor.getInt(1));
+                }
+            }
+            mChannelList.invalidateViews();
+            invalidateOptionsMenu();
+            return;
+        }
         mAdapter.swapCursor(cursor);
         updatePresetSwitcher();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mAdapter.swapCursor(null);
+        if (loader.getId() == FAVORITES_LOADER) {
+            mFavoriteFrequencies.clear();
+            mChannelList.invalidateViews();
+        } else {
+            mAdapter.swapCursor(null);
+        }
     }
 
     private void initUI() {
@@ -940,6 +1015,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mAdapter = new ChannelListAdapter(this, null);
         mChannelList.setAdapter(mAdapter);
         getLoaderManager().initLoader(CHANNEL_LIST_LOADER, null, this);
+        getLoaderManager().initLoader(FAVORITES_LOADER, null, this);
         mChannelList.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuinfo) {
@@ -960,13 +1036,16 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                         }
                         menu.add(Menu.NONE, EDIT_MENU_ID, Menu.FIRST + 1, R.string.edit_preset);
                         menu.add(Menu.NONE, CLEAR_MENU_ID, Menu.FIRST + 3, R.string.clear_preset);
+                        menu.add(Menu.NONE, FAVORITE_MENU_ID, Menu.FIRST + 4,
+                                mFavoriteFrequencies.contains(frequency)
+                                        ? R.string.remove_favorite : R.string.add_favorite);
                     }
                     cursor.close();
                 } else {
                     StringBuilder sb = new StringBuilder();
                     sb.append(getString(R.string.preset));
                     sb.append(" ");
-                    sb.append(pos);
+                    sb.append(pos + 1);
                     menu.setHeaderTitle(sb.toString());
                 }
             }
@@ -974,7 +1053,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mChannelList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                playClickPreset(position);
+                playClickPreset((int) id);
             }
         });
     }
@@ -1067,12 +1146,22 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
      * @param upward weather animation should move up or down
      */
     private void showSeekAnimation(boolean show, boolean upward) {
-        if (show && mScanBar.getVisibility() == View.INVISIBLE) {
-            mScanBar.setBackgroundDrawable(upward ? mScanAnimationUp : mScanAnimationDown);
-            mScanBar.setVisibility(View.VISIBLE);
-            mScanAnimationUp.start();
-        } else if (!show && mScanBar.getVisibility() == View.VISIBLE) {
-            mScanAnimationUp.stop();
+        AnimationDrawable currentAnimation = mScanBar.getBackground() instanceof AnimationDrawable
+                ? (AnimationDrawable) mScanBar.getBackground() : null;
+        if (show) {
+            AnimationDrawable selectedAnimation = upward ? mScanAnimationUp : mScanAnimationDown;
+            if (mScanBar.getVisibility() != View.VISIBLE || currentAnimation != selectedAnimation) {
+                if (currentAnimation != null) {
+                    currentAnimation.stop();
+                }
+                mScanBar.setBackgroundDrawable(selectedAnimation);
+                mScanBar.setVisibility(View.VISIBLE);
+                selectedAnimation.start();
+            }
+        } else if (mScanBar.getVisibility() == View.VISIBLE) {
+            if (currentAnimation != null) {
+                currentAnimation.stop();
+            }
             mScanBar.setVisibility(View.INVISIBLE);
             mScanBar.setBackgroundDrawable(null);
         }
@@ -1104,8 +1193,8 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mRdsMarqueeText.setText(null);
     }
 
-    private void playClickPreset(int position) {
-        Uri uri = Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(position));
+    private void playClickPreset(int presetId) {
+        Uri uri = Uri.withAppendedPath(Channels.CONTENT_URI, String.valueOf(presetId));
         Cursor cursor = getContentResolver().query(uri, FMUtil.PROJECTION, null, null, null);
 
         if (cursor == null) {
@@ -1116,7 +1205,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             int frequency = cursor.getInt(FMUtil.CHANNEL_COLUMN_FREQ);
             if (frequency == 0) {
                 Log.d(TAG, "Selected an empty channel, saving...");
-                saveChannel(position);
+                saveChannel(presetId);
             } else {
                 mCurFreq = frequency;
                 updatePresetSwitcher();
@@ -1125,6 +1214,101 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             }
         }
         cursor.close();
+    }
+
+    private void toggleFavorite(int frequency) {
+        if (frequency < FMUtil.MIN_FREQUENCY || frequency > FMUtil.MAX_FREQUENCY) {
+            return;
+        }
+        Uri uri = Uri.withAppendedPath(Favorites.CONTENT_URI, String.valueOf(frequency));
+        if (mFavoriteFrequencies.contains(frequency)) {
+            getContentResolver().delete(uri, null, null);
+            mFavoriteFrequencies.remove(frequency);
+        } else {
+            String name = "";
+            Cursor station = getContentResolver().query(Channels.CONTENT_URI, FMUtil.PROJECTION,
+                    Channels.FREQUENCY + "=?", new String[] { String.valueOf(frequency) }, null);
+            if (station != null) {
+                if (station.moveToFirst()) {
+                    name = station.getString(FMUtil.CHANNEL_COLUMN_NAME);
+                    if (TextUtils.isEmpty(name)) {
+                        name = station.getString(FMUtil.CHANNEL_COLUMN_RDSNAME);
+                    }
+                }
+                station.close();
+            }
+            ContentValues values = new ContentValues();
+            values.put(Favorites.FREQUENCY, frequency);
+            values.put(Favorites.NAME, name == null ? "" : name);
+            getContentResolver().insert(Favorites.CONTENT_URI, values);
+            mFavoriteFrequencies.add(frequency);
+        }
+        mChannelList.invalidateViews();
+        invalidateOptionsMenu();
+    }
+
+    private void showFavorites() {
+        final ArrayList<Integer> frequencies = new ArrayList<Integer>();
+        ArrayList<String> labels = new ArrayList<String>();
+        HashSet<Integer> available = new HashSet<Integer>();
+        Cursor stations = getContentResolver().query(Channels.CONTENT_URI,
+                new String[] { Channels.FREQUENCY }, Channels.FREQUENCY + "!=0", null, null);
+        if (stations != null) {
+            while (stations.moveToNext()) {
+                available.add(stations.getInt(0));
+            }
+            stations.close();
+        }
+        Cursor favorites = getContentResolver().query(Favorites.CONTENT_URI,
+                new String[] { Favorites.ID, Favorites.FREQUENCY, Favorites.NAME }, null, null, null);
+        if (favorites != null) {
+            while (favorites.moveToNext()) {
+                int frequency = favorites.getInt(1);
+                frequencies.add(frequency);
+                String name = favorites.getString(2);
+                String label = FMUtil.formatFrequency(this, frequency);
+                if (!TextUtils.isEmpty(name)) {
+                    label += " — " + name;
+                }
+                if (!available.contains(frequency)) {
+                    label += " (" + getString(R.string.not_in_scan) + ")";
+                }
+                labels.add(label);
+            }
+            favorites.close();
+        }
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle(R.string.favorites)
+                .setNegativeButton(R.string.btn_done, null);
+        if (labels.isEmpty()) {
+            dialog.setMessage(R.string.no_favorites);
+        } else {
+            dialog.setItems(labels.toArray(new String[labels.size()]),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface ignored, int which) {
+                            if (mScanning || mSeeking || mTuning || mService == null) {
+                                Toast.makeText(FMRadioMain.this, R.string.favorite_tune_unavailable,
+                                        Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            int frequency = frequencies.get(which);
+                            if (!mRadioPowered) {
+                                if (doPowerOn()) {
+                                    mPendingFavoriteFrequency = frequency;
+                                } else {
+                                    Toast.makeText(FMRadioMain.this, R.string.favorite_tune_unavailable,
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                mCurFreq = frequency;
+                                updatePresetSwitcher();
+                                updateDisplayPanel();
+                                updateFrequency();
+                            }
+                        }
+                    });
+        }
+        dialog.show();
     }
 
     private void startScanning() {
@@ -1280,11 +1464,22 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     }
 
     private void setSelectedPreset(int preset) {
-        mChannelList.setSelection(preset);
         if (preset < 0) {
             mChannelList.clearChoices();
         } else {
-            mChannelList.setItemChecked(preset, true);
+            int position = ListView.INVALID_POSITION;
+            for (int index = 0; index < mAdapter.getCount(); index++) {
+                if (mAdapter.getItemId(index) == preset) {
+                    position = index;
+                    break;
+                }
+            }
+            if (position == ListView.INVALID_POSITION) {
+                mChannelList.clearChoices();
+            } else {
+                mChannelList.setSelection(position);
+                mChannelList.setItemChecked(position, true);
+            }
         }
         mChannelList.invalidateViews();
         invalidateOptionsMenu();
@@ -1300,24 +1495,21 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
 
     private int getIndexOfEmptyItem() {
         Cursor cursor = getContentResolver().query(Channels.CONTENT_URI, FMUtil.PROJECTION, null, null, null);
-        int count = 0;
+        int id = -1;
 
         if (cursor != null) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 if (cursor.getInt(FMUtil.CHANNEL_COLUMN_FREQ) == 0) {
+                    id = cursor.getInt(FMUtil.CHANNEL_COLUMN_ID);
                     break;
                 }
-                count++;
                 cursor.moveToNext();
-            }
-            if (cursor.isAfterLast()) {
-                count = -1;
             }
             cursor.close();
         }
 
-        return count;
+        return id;
     }
 
     public void clearDB() {
@@ -1495,7 +1687,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         }
     }
 
-    private void doPowerOn() {
+    private boolean doPowerOn() {
         boolean success = false;
         try {
             success = mService.powerOn();
@@ -1506,6 +1698,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
             Log.v(TAG, "Waiting for FM service to come up");
             showDialog(DIALOG_POWERON);
         }
+        return success;
     }
 
     private void doPowerOff() {

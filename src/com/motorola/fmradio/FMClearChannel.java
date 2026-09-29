@@ -32,6 +32,7 @@ public class FMClearChannel extends ListActivity implements View.OnClickListener
     private ListView mListView;
     private Button mDoneButton;
     private int mCount;
+    private ArrayList<Integer> mPresetIds = new ArrayList<Integer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +70,10 @@ public class FMClearChannel extends ListActivity implements View.OnClickListener
         if (cursor != null) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
+                int id = cursor.getInt(FMUtil.CHANNEL_COLUMN_ID);
+                mPresetIds.add(id);
                 mCount++;
-                items.add(FMUtil.getPresetUiString(this, cursor, mCount));
+                items.add(FMUtil.getPresetUiString(this, cursor, id + 1));
                 cursor.moveToNext();
             }
             cursor.close();
@@ -141,12 +144,14 @@ public class FMClearChannel extends ListActivity implements View.OnClickListener
                 }
                 sb.append(Channels.ID);
                 sb.append("=");
-                sb.append(i);
+                sb.append(mPresetIds.get(i));
                 count++;
             }
         }
 
-        getContentResolver().update(Channels.CONTENT_URI, cv, sb.toString(), null);
+        if (count > 0) {
+            getContentResolver().update(Channels.CONTENT_URI, cv, sb.toString(), null);
+        }
 
         Intent result = new Intent();
         result.putExtra(EXTRA_CLEARED_ALL, count == mCount);

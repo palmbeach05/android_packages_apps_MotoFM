@@ -4,11 +4,6 @@
     <PreferenceCategory android:key="general"
                         android:title="@string/general_settings_title">
 
-        <CheckBoxPreference android:key="ignore_airplane_mode"
-                            android:defaultValue="false"
-                            android:title="@string/ignore_airplane_title"
-                            android:summary="@string/ignore_airplane_summary" />
-
         <CheckBoxPreference android:key="ignore_no_headset"
                             android:defaultValue="false"
                             android:title="@string/ignore_no_headset_title"
@@ -43,17 +38,13 @@
     <PreferenceCategory android:key="backup_restore"
                         android:title="@string/backup_restore_title">
 
-        <EditTextPreference android:key="backup_presets"
-                            android:persistent="false"
-                            android:dialogMessage="@string/backup_presets_dialog_message"
-                            android:title="@string/backup_presets_title"
-                            android:summary="@string/backup_presets_summary" />
+        <Preference android:key="backup_presets"
+                    android:title="@string/backup_presets_title"
+                    android:summary="@string/backup_presets_summary" />
 
-        <ListPreference android:key="restore_presets"
-                        android:persistent="false"
-                        android:dialogTitle="@string/select_backup"
-                        android:title="@string/restore_presets_title"
-                        android:summary="@string/restore_presets_summary" />
+        <Preference android:key="restore_presets"
+                    android:title="@string/restore_presets_title"
+                    android:summary="@string/restore_presets_summary" />
 
     </PreferenceCategory>
 

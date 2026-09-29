@@ -29,7 +29,6 @@
     <string name="fmradio_scan_confirm_msg">Вы хотите выполнить автоматическое сканирование и сохранить станции?</string>
     <string name="fmradio_clear_confirm_msg">Автоматическое сканирование удалит сохраненные станции. Хотите продолжить?</string>
     <string name="fmradio_no_headset">Что бы использовать FM-Радио подключите наушники</string>
-    <string name="fmradio_airplane_mode_enabled">Что бы использовать FM-Радио отключите "Режим самолета".</string>
     <string name="fmradio_waiting_for_power_on">FM-Радио запускается, пожалуйста подождите</string>
     <string name="error_start_scan">Сканирование не удалось начать. Попробуйте еще раз.</string>
     <string name="service_start_error_title">Сервис FM-Радио не удалось запустить.</string>
@@ -100,8 +99,6 @@
 
     <string name="settings_title">Настройки</string>
     <string name="general_settings_title">Главные</string>
-    <string name="ignore_airplane_title">Игнорировать "Режим полета"</string>
-    <string name="ignore_airplane_summary">Разрешить работать радио при включенном режиме полета</string>
     <string name="ignore_no_headset_title">Игнорировать отсутствие наушников</string>
     <string name="ignore_no_headset_summary">Разрешить работать радио без наушников. Качество приема будет хуже.</string>
     <string name="tuning_settings_title">Настройка</string>
@@ -116,7 +113,6 @@
     <string name="notice">Уведомление</string>
     <string name="warning">Внимание</string>
     <string name="no_headset_ignore_message">Наушники используются в качестве антенны FM-Радио. Без наушников, качество приема снизиться.</string>
-    <string name="airplane_ignore_warning_message">FM-Радио использует оборудование Bluetooth, которое в некоторых ситуациях может быть запрещено. Вы действительно хотите чтобы радио работало в режиме полета?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
 </resources>
