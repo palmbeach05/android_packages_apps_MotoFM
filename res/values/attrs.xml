@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="quickContextDividerColor" format="color" />
-    <attr name="seekBackwardIcon" format="reference" />
-    <attr name="tuneDownIcon" format="reference" />
-    <attr name="tuneUpIcon" format="reference" />
-    <attr name="seekForwardIcon" format="reference" />
 </resources>
