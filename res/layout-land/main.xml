@@ -137,28 +137,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="57.0px"
                     android:layout_marginLeft="0.0px"
-                    android:background="@drawable/fm_autosearch_reduce_enable" />
+                    android:background="?attr/seekBackwardIcon" />
 
                 <ImageButton
                     android:id="@id/btn_reduce"
                     android:layout_width="wrap_content"
                     android:layout_height="57.0px"
                     android:layout_marginLeft="5.0px"
-                    android:background="@drawable/fm_manualadjust_reduce_enable" />
+                    android:background="?attr/tuneDownIcon" />
 
                 <ImageButton
                     android:id="@id/btn_add"
                     android:layout_width="wrap_content"
                     android:layout_height="57.0px"
                     android:layout_marginLeft="5.0px"
-                    android:background="@drawable/fm_manualadjust_plus_enable" />
+                    android:background="?attr/tuneUpIcon" />
 
                 <ImageButton
                     android:id="@id/btn_seekforward"
                     android:layout_width="wrap_content"
                     android:layout_height="57.0px"
                     android:layout_marginLeft="5.0px"
-                    android:background="@drawable/fm_autosearch_plus_enable" />
+                    android:background="?attr/seekForwardIcon" />
             </LinearLayout>
 
             <RelativeLayout
