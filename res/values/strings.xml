@@ -116,7 +116,7 @@
     <string name="button_settings_title">Button behavior</string>
     <string name="media_button_title">Media buttons</string>
     <string name="media_button_summary">Action for the previous and next media buttons</string>
-    <string name="list_preference_summary">%1$s\n%2$s</string>
+    <string name="list_preference_summary">%1$s\n\n%2$s</string>
     <string name="media_button_entry_presets">Switch between presets</string>
     <string name="media_button_entry_seek">Seek stations</string>
     <string name="notice">Notice</string>
