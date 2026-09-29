@@ -36,6 +36,7 @@ public class FMClearChannel extends ListActivity implements View.OnClickListener
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Preferences.applyTheme(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.clear_ch);

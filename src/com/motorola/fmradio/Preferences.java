@@ -1,5 +1,6 @@
 package com.motorola.fmradio;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -16,10 +17,25 @@ public class Preferences {
     private static final String KEY_MEDIA_BUTTON_BEHAVIOUR = "media_button_behaviour";
     private static final String KEY_HIDE_ACTIONBAR = "hide_actionbar";
     private static final String KEY_USE_LOUDSPEAKER = "use_loudspeaker";
+    private static final String KEY_THEME = "theme";
 
     private static final int DEFAULT_VOLUME = 0;
     private static final int DEFAULT_FREQUENCY = FMUtil.MIN_FREQUENCY;
     private static final int DEFAULT_SENSITIVITY = 12;
+
+    static public boolean isDarkTheme(Context context) {
+        return TextUtils.equals(getPrefs(context).getString(KEY_THEME, "light"), "dark");
+    }
+
+    static public void setDarkTheme(Context context, boolean dark) {
+        getPrefs(context).edit().putString(KEY_THEME, dark ? "dark" : "light").commit();
+    }
+
+    static public void applyTheme(Activity activity) {
+        if (isDarkTheme(activity)) {
+            activity.setTheme(R.style.Theme_Dark);
+        }
+    }
 
     static public int getVolume(Context context) {
         return getPrefs(context).getInt(KEY_VOLUME, DEFAULT_VOLUME);

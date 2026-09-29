@@ -41,16 +41,21 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private CheckBoxPreference mIgnoreNoHeadsetPref;
     private ListPreference mSeekSensitivityPref;
     private ListPreference mMediaButtonPref;
+    private ListPreference mThemePref;
     private Preference mBackupPresetsPref;
     private Preference mRestorePresetsPref;
     private String[] mPresetBackupNames = new String[0];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Preferences.applyTheme(this);
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
         PreferenceScreen prefs = getPreferenceScreen();
+
+        mThemePref = (ListPreference) prefs.findPreference("theme");
+        mThemePref.setOnPreferenceChangeListener(this);
 
         mIgnoreNoHeadsetPref = (CheckBoxPreference) prefs.findPreference("ignore_no_headset");
         mIgnoreNoHeadsetPref.setOnPreferenceChangeListener(this);
@@ -65,6 +70,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     @Override
     protected void onResume() {
         super.onResume();
+        mThemePref.setSummary(Preferences.isDarkTheme(this)
+                ? R.string.theme_dark : R.string.theme_light);
         updateListPreferenceSummary(mSeekSensitivityPref, R.string.seek_sensitivity_summary,
                 mSeekSensitivityPref.getValue());
         updateListPreferenceSummary(mMediaButtonPref, R.string.media_button_summary,
@@ -86,7 +93,11 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference == mIgnoreNoHeadsetPref) {
+        if (preference == mThemePref) {
+            Preferences.setDarkTheme(this, "dark".equals(newValue));
+            recreate();
+            return false;
+        } else if (preference == mIgnoreNoHeadsetPref) {
             final Boolean value = (Boolean) newValue;
             if (value) {
                 showDialog(DIALOG_INFO_HEADSET);

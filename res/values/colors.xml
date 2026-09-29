@@ -14,4 +14,6 @@
     <!-- White -->
     <color name="white">#ffffffff</color>
 
+    <color name="dark_context_divider">#66ffffff</color>
+
 </resources>

@@ -19,6 +19,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.Rect;
+import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -189,6 +190,7 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     private int mPreFreq = FMUtil.MIN_FREQUENCY;
     private boolean mRadioPowered = false;
     private boolean mSpeakerEnabled = false;
+    private boolean mDarkTheme;
     private boolean mScanning = false;
     private boolean mTuning = false;
     private boolean mSeeking = false;
@@ -213,6 +215,10 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
                 mPeakOne = (ImageView) view.findViewById(R.id.peak_one);
                 mPeakTwo = (ImageView) view.findViewById(R.id.peak_two);
                 mQuickContext = (FrameLayout) view.findViewById(R.id.track_list_context_frame);
+                if (mDarkTheme) {
+                    ImageView arrow = (ImageView) view.findViewById(R.id.quick_context_tip);
+                    arrow.setColorFilter(0xffffffff, PorterDuff.Mode.SRC_IN);
+                }
             }
 
             public void bind(Context context, Cursor cursor) {
@@ -483,6 +489,8 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
+        mDarkTheme = Preferences.isDarkTheme(this);
+        Preferences.applyTheme(this);
         super.onCreate(savedInstanceState);
 
         mActionBar = getActionBar();
@@ -500,6 +508,14 @@ public class FMRadioMain extends ListActivity implements SeekBar.OnSeekBarChange
         mWakeLock.setReferenceCounted(false);
         updatePresetSwitcher();
         updateDisplayPanel();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mDarkTheme != Preferences.isDarkTheme(this)) {
+            recreate();
+        }
     }
 
     @Override
