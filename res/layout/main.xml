@@ -146,25 +146,25 @@
             android:id="@+id/btn_seekbackward"
             style="@style/BottomActionBarItem"
             android:layout_weight="1"
-            android:src="@drawable/fm_autosearch_reduce" />
+            android:src="?attr/seekBackwardIcon" />
 
         <ImageButton
             android:id="@+id/btn_reduce"
             style="@style/BottomActionBarItem"
             android:layout_weight="1"
-            android:src="@drawable/fm_manualadjust_reduce" />
+            android:src="?attr/tuneDownIcon" />
 
         <ImageButton
             android:id="@+id/btn_add"
             style="@style/BottomActionBarItem"
             android:layout_weight="1"
-            android:src="@drawable/fm_manualadjust_plus" />
+            android:src="?attr/tuneUpIcon" />
 
         <ImageButton
             android:id="@+id/btn_seekforward"
             style="@style/BottomActionBarItem"
             android:layout_weight="1"
-            android:src="@drawable/fm_autosearch_plus" />
+            android:src="?attr/seekForwardIcon" />
     </LinearLayout>
 
 </LinearLayout>
